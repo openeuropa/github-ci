@@ -1,2 +1,130 @@
 # github-ci
-Repository for centralising GitHub actions and its setup for components to use.
+
+Repository for centralising GitHub Actions reusable workflows for OpenEuropa components.
+
+## Available Workflows
+
+### Drupal CI (`drupal-ci.yml`)
+
+Reusable workflow for Drupal modules. Includes Docker image caching, Drupal core matrix testing, and support for PHPUnit and Behat tests.
+
+#### Inputs
+
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `php_versions` | string | `'["8.3"]'` | JSON array of PHP versions to test |
+| `core_versions` | string | `'["10.4.0", "10.5.0", "11.1.0", "11.2.0"]'` | JSON array of Drupal core versions to test |
+| `run_phpunit` | boolean | `true` | Whether to run PHPUnit tests |
+| `run_behat` | boolean | `false` | Whether to run Behat tests |
+
+#### Usage
+
+Basic usage with all defaults:
+
+```yaml
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  ci:
+    uses: openeuropa/github-ci/.github/workflows/drupal-ci.yml@main
+```
+
+With Behat tests enabled:
+
+```yaml
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  ci:
+    uses: openeuropa/github-ci/.github/workflows/drupal-ci.yml@main
+    with:
+      run_behat: true
+```
+
+With custom PHP and core versions:
+
+```yaml
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  ci:
+    uses: openeuropa/github-ci/.github/workflows/drupal-ci.yml@main
+    with:
+      php_versions: '["8.3", "8.4"]'
+      core_versions: '["10.5.0", "11.2.0"]'
+      run_behat: true
+```
+
+---
+
+### PHP Library CI (`php-library-ci.yml`)
+
+Reusable workflow for standalone PHP libraries (non-Drupal). Includes Docker image caching and support for PHPUnit and Behat tests.
+
+#### Inputs
+
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `php_versions` | string | `'["8.3"]'` | JSON array of PHP versions to test |
+| `run_phpunit` | boolean | `true` | Whether to run PHPUnit tests |
+| `run_behat` | boolean | `false` | Whether to run Behat tests |
+
+#### Usage
+
+Basic usage with all defaults:
+
+```yaml
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    uses: openeuropa/github-ci/.github/workflows/php-library-ci.yml@main
+```
+
+With Behat tests (e.g., for behat-transformation-context):
+
+```yaml
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  ci:
+    uses: openeuropa/github-ci/.github/workflows/php-library-ci.yml@main
+    with:
+      run_phpunit: false
+      run_behat: true
+```
+
+---
+
+## Prerequisites
+
+For components to use these workflows, their `docker-compose.yml` must use the standard image:
+
+```yaml
+services:
+  web:
+    image: fpfis/httpd-php:8.3-dev
+    # ...
+```
+
+The workflows will automatically modify this to use the `-ci` variant with the appropriate PHP version during CI runs.
