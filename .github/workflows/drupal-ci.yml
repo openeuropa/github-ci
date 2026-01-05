@@ -10,7 +10,7 @@ on:
       core_versions:
         description: 'JSON array of Drupal core versions to test'
         type: string
-        default: '["10.4.0", "10.5.0", "11.1.0", "11.2.0"]'
+        default: '["~10.6.0", "~11.2.0"]'
       run_phpunit:
         description: 'Whether to run PHPUnit tests'
         type: boolean
@@ -69,7 +69,7 @@ jobs:
         run: docker compose exec -T web composer self-update --2
 
       - name: Build dependencies
-        run: docker compose exec -T web composer require drupal/core:~${{ matrix.core_version }} drupal/core-composer-scaffold:~${{ matrix.core_version }} drupal/core-dev:~${{ matrix.core_version }} --update-with-all-dependencies --ansi --no-progress --no-interaction
+        run: docker compose exec -T web composer require drupal/core:${{ matrix.core_version }} drupal/core-composer-scaffold:${{ matrix.core_version }} drupal/core-dev:${{ matrix.core_version }} --update-with-all-dependencies --ansi --no-progress --no-interaction
 
       - name: Run grumphp
         run: docker compose exec -T web ./vendor/bin/grumphp run
