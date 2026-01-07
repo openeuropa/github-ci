@@ -13,7 +13,7 @@ Reusable workflow for Drupal modules. Includes Docker image caching, Drupal core
 | Input | Type | Default | Description |
 |-------|------|---------|-------------|
 | `php_versions` | string | `'["8.3"]'` | JSON array of PHP versions to test |
-| `core_versions` | string | `'["10.4.0", "10.5.0", "11.1.0", "11.2.0"]'` | JSON array of Drupal core versions to test |
+| `core_versions` | string | `'["~10.4.0", "~10.5.0", "~11.1.0", "~11.2.0"]'` | JSON array of Drupal core versions to test |
 | `run_phpunit` | boolean | `true` | Whether to run PHPUnit tests |
 | `run_behat` | boolean | `false` | Whether to run Behat tests |
 
@@ -63,7 +63,7 @@ jobs:
     uses: openeuropa/github-ci/.github/workflows/drupal-ci.yml@main
     with:
       php_versions: '["8.3", "8.4"]'
-      core_versions: '["10.5.0", "11.2.0"]'
+      core_versions: '["~10.5.0", "~11.2.0"]'
       run_behat: true
 ```
 
