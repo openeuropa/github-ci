@@ -63,9 +63,9 @@ jobs:
           sed -i -E 's|httpd-php:[0-9.]+-dev|httpd-php:${{ matrix.php_version }}-ci|g' docker-compose.yml
           # Set the Selenium image based on core version.
           if [ "${{ steps.selenium.outputs.mode }}" = "w3c" ]; then
-            sed -i -E 's|image: selenium/standalone-chrome[a-z]*:[^ ]*|image: selenium/standalone-chromium:127.0|' docker-compose.yml
+            sed -i -E 's|image: selenium/standalone-chrom[a-z]*:[^ ]*|image: selenium/standalone-chromium:127.0|' docker-compose.yml
           else
-            sed -i -E 's|image: selenium/standalone-chrome[a-z]*:[^ ]*|image: selenium/standalone-chrome:4.10.0|' docker-compose.yml
+            sed -i -E 's|image: selenium/standalone-chrom[a-z]*:[^ ]*|image: selenium/standalone-chrome:4.10.0|' docker-compose.yml
           fi
           docker compose pull
           docker save -o ~/docker-images.tar $(docker compose config --images)
@@ -79,9 +79,9 @@ jobs:
         run: |
           sed -i -E 's|httpd-php:[0-9.]+-dev|httpd-php:${{ matrix.php_version }}-ci|g' docker-compose.yml
           if [ "${{ steps.selenium.outputs.mode }}" = "w3c" ]; then
-            sed -i -E 's|image: selenium/standalone-chrome[a-z]*:[^ ]*|image: selenium/standalone-chromium:127.0|' docker-compose.yml
+            sed -i -E 's|image: selenium/standalone-chrom[a-z]*:[^ ]*|image: selenium/standalone-chromium:127.0|' docker-compose.yml
           else
-            sed -i -E 's|image: selenium/standalone-chrome[a-z]*:[^ ]*|image: selenium/standalone-chrome:4.10.0|' docker-compose.yml
+            sed -i -E 's|image: selenium/standalone-chrom[a-z]*:[^ ]*|image: selenium/standalone-chrome:4.10.0|' docker-compose.yml
           fi
 
       - name: Start services with Docker Compose
