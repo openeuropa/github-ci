@@ -87,6 +87,16 @@ jobs:
       - name: Start services with Docker Compose
         run: docker compose up -d
 
+      - name: Configure legacy Selenium settings
+        if: steps.selenium.outputs.mode == 'legacy'
+        run: |
+          if [ -f phpunit.xml.dist ]; then
+            sed -i 's/"w3c": true/"w3c": false/g' phpunit.xml.dist
+          fi
+          if [ -f behat.yml.dist ]; then
+            sed -i 's/w3c: true/w3c: false/' behat.yml.dist
+          fi
+
       - name: Update composer
         run: docker compose exec -T web composer self-update --2
 
