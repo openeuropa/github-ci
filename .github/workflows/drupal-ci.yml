@@ -61,7 +61,7 @@ jobs:
         if: steps.docker-cache.outputs.cache-hit != 'true'
         run: |
           sed -i -E 's|httpd-php:[0-9.]+-dev|httpd-php:${{ matrix.php_version }}-ci|g' docker-compose.yml
-          # Set the Selenium image based on core version.
+          # Set the Selenium image and environment based on core version.
           if [ "${{ steps.selenium.outputs.mode }}" = "w3c" ]; then
             sed -i -E 's|image: selenium/standalone-chrom[a-z]*:[^ ]*|image: selenium/standalone-chromium:127.0|' docker-compose.yml
           else
@@ -92,9 +92,11 @@ jobs:
         run: |
           if [ -f phpunit.xml.dist ]; then
             sed -i 's/"w3c": true/"w3c": false/g' phpunit.xml.dist
+            sed -i 's/"--window-size=1920,1080"/"--start-maximized"/g' phpunit.xml.dist
           fi
           if [ -f behat.yml.dist ]; then
             sed -i 's/w3c: true/w3c: false/' behat.yml.dist
+            sed -i "s/'--window-size=1920,1080'/'--start-maximized'/" behat.yml.dist
           fi
 
       - name: Update composer
