@@ -33,22 +33,10 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v4
 
-      - name: Determine Selenium mode
-        id: selenium
-        run: |
-          CORE="${{ matrix.core_version }}"
-          # Drupal 11.1+ deprecated WebDriverCurlService and supports W3C WebDriver.
-          # Older versions need legacy Chrome with w3c: false.
-          if [[ ! "$CORE" =~ ^~10\. ]] && [[ ! "$CORE" =~ ^~11\.0 ]]; then
-            echo "mode=w3c" >> $GITHUB_OUTPUT
-          else
-            echo "mode=legacy" >> $GITHUB_OUTPUT
-          fi
-
       - name: Generate cache key
         id: cache-key
-        # Include the docker-compose.yml file hash, selenium mode and week number to ensure weekly cache refresh.
-        run: echo "key=docker-${{ runner.os }}-${{ matrix.php_version }}-${{ steps.selenium.outputs.mode }}-${{ hashFiles('docker-compose.yml') }}-$(date +%Y-%U)" >> $GITHUB_OUTPUT
+        # Include the docker-compose.yml file hash and week number to ensure weekly cache refresh.
+        run: echo "key=docker-${{ runner.os }}-${{ matrix.php_version }}-${{ hashFiles('docker-compose.yml') }}-$(date +%Y-%U)" >> $GITHUB_OUTPUT
 
       - name: Cache Docker images
         uses: actions/cache@v4
@@ -61,12 +49,6 @@ jobs:
         if: steps.docker-cache.outputs.cache-hit != 'true'
         run: |
           sed -i -E 's|httpd-php:[0-9.]+-dev|httpd-php:${{ matrix.php_version }}-ci|g' docker-compose.yml
-          # Set the Selenium image and environment based on core version.
-          if [ "${{ steps.selenium.outputs.mode }}" = "w3c" ]; then
-            sed -i -E 's|image: selenium/standalone-chrom[a-z]*:[^ ]*|image: selenium/standalone-chromium:127.0|' docker-compose.yml
-          else
-            sed -i -E 's|image: selenium/standalone-chrom[a-z]*:[^ ]*|image: selenium/standalone-chrome:4.10.0|' docker-compose.yml
-          fi
           docker compose pull
           docker save -o ~/docker-images.tar $(docker compose config --images)
 
@@ -78,26 +60,9 @@ jobs:
         if: steps.docker-cache.outputs.cache-hit == 'true'
         run: |
           sed -i -E 's|httpd-php:[0-9.]+-dev|httpd-php:${{ matrix.php_version }}-ci|g' docker-compose.yml
-          if [ "${{ steps.selenium.outputs.mode }}" = "w3c" ]; then
-            sed -i -E 's|image: selenium/standalone-chrom[a-z]*:[^ ]*|image: selenium/standalone-chromium:127.0|' docker-compose.yml
-          else
-            sed -i -E 's|image: selenium/standalone-chrom[a-z]*:[^ ]*|image: selenium/standalone-chrome:4.10.0|' docker-compose.yml
-          fi
 
       - name: Start services with Docker Compose
         run: docker compose up -d
-
-      - name: Configure legacy Selenium settings
-        if: steps.selenium.outputs.mode == 'legacy'
-        run: |
-          if [ -f phpunit.xml.dist ]; then
-            sed -i 's/"w3c": true/"w3c": false/g' phpunit.xml.dist
-            sed -i 's/"--window-size=1920,1080"/"--start-maximized"/g' phpunit.xml.dist
-          fi
-          if [ -f behat.yml.dist ]; then
-            sed -i 's/w3c: true/w3c: false/' behat.yml.dist
-            sed -i "s/'--window-size=1920,1080'/'--start-maximized'/" behat.yml.dist
-          fi
 
       - name: Update composer
         run: docker compose exec -T web composer self-update --2
