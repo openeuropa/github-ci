@@ -101,9 +101,12 @@ jobs:
       - name: Run grumphp
         run: docker compose exec -T web ./vendor/bin/grumphp run
 
+      - name: Check tmpfs
+        run: docker compose exec -T mysql df -h /tmpdbdata
+
       - name: Run phpunit
         if: inputs.run_phpunit
-        run: docker compose exec -T web ./vendor/bin/phpunit
+        run: docker compose exec -T web ./vendor/bin/run toolkit:test-phpunit-batches
 
       - name: Site install
         run: docker compose exec -T web ./vendor/bin/run drupal:site-install
