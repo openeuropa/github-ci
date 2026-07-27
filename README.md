@@ -15,6 +15,7 @@ Reusable workflow for Drupal modules. Includes Docker image caching, Drupal core
 | `php_versions` | string | `'["8.3"]'` | JSON array of PHP versions to test |
 | `core_versions` | string | `'["~10.4.0", "~10.5.0", "~11.1.0", "~11.2.0"]'` | JSON array of Drupal core versions to test |
 | `run_phpunit` | boolean | `true` | Whether to run PHPUnit tests |
+| `run_phpunit_batches` | boolean | `false` | Whether to run PHPUnit tests in parallel batches via the `toolkit:test-phpunit-batches` command |
 | `run_behat` | boolean | `false` | Whether to run Behat tests |
 
 #### Usage
@@ -32,6 +33,24 @@ jobs:
   ci:
     uses: openeuropa/github-ci/.github/workflows/drupal-ci.yml@main
 ```
+
+With PHPUnit running in parallel batches:
+
+```yaml
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  ci:
+    uses: openeuropa/github-ci/.github/workflows/drupal-ci.yml@main
+    with:
+      run_phpunit_batches: true
+```
+
+Running in batches requires the component to provide the `toolkit:test-phpunit-batches` command (see for example `oe_translation`), to declare the batch names in `runner.yml.dist` under `toolkit.test.phpunit.batches` and to assign every test to a batch with a PHPUnit `@group` annotation matching a batch name. The command fails if any test is not assigned to a batch.
 
 With Behat tests enabled:
 

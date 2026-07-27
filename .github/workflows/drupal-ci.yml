@@ -15,6 +15,10 @@ on:
         description: 'Whether to run PHPUnit tests'
         type: boolean
         default: true
+      run_phpunit_batches:
+        description: 'Whether to run PHPUnit tests in parallel batches via the toolkit:test-phpunit-batches command'
+        type: boolean
+        default: false
       run_behat:
         description: 'Whether to run Behat tests'
         type: boolean
@@ -102,8 +106,12 @@ jobs:
         run: docker compose exec -T web ./vendor/bin/grumphp run
 
       - name: Run phpunit
-        if: inputs.run_phpunit
+        if: inputs.run_phpunit && !inputs.run_phpunit_batches
         run: docker compose exec -T web ./vendor/bin/phpunit
+
+      - name: Run phpunit in parallel batches
+        if: inputs.run_phpunit && inputs.run_phpunit_batches
+        run: docker compose exec -T web ./vendor/bin/run toolkit:test-phpunit-batches
 
       - name: Site install
         run: docker compose exec -T web ./vendor/bin/run drupal:site-install
