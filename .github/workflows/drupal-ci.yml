@@ -35,7 +35,7 @@ jobs:
       PHP_VERSION: ${{ matrix.php_version }}
     steps:
       - name: Clone repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Determine Selenium mode
         id: selenium
@@ -55,7 +55,7 @@ jobs:
         run: echo "key=docker-${{ runner.os }}-${{ matrix.php_version }}-${{ steps.selenium.outputs.mode }}-${{ hashFiles('docker-compose.yml') }}-$(date +%Y-%U)" >> $GITHUB_OUTPUT
 
       - name: Cache Docker images
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: docker-cache
         with:
           path: ~/docker-images.tar
