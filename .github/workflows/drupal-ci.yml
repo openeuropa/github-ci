@@ -15,6 +15,10 @@ on:
         description: 'Whether to run PHPUnit tests'
         type: boolean
         default: true
+      run_phpunit_batches:
+        description: 'Whether to run PHPUnit tests in parallel batches via the toolkit:test-phpunit-batches command'
+        type: boolean
+        default: false
       run_behat:
         description: 'Whether to run Behat tests'
         type: boolean
@@ -31,7 +35,7 @@ jobs:
       PHP_VERSION: ${{ matrix.php_version }}
     steps:
       - name: Clone repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Determine Selenium mode
         id: selenium
@@ -51,7 +55,7 @@ jobs:
         run: echo "key=docker-${{ runner.os }}-${{ matrix.php_version }}-${{ steps.selenium.outputs.mode }}-${{ hashFiles('docker-compose.yml') }}-$(date +%Y-%U)" >> $GITHUB_OUTPUT
 
       - name: Cache Docker images
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: docker-cache
         with:
           path: ~/docker-images.tar
@@ -102,8 +106,19 @@ jobs:
         run: docker compose exec -T web ./vendor/bin/grumphp run
 
       - name: Run phpunit
-        if: inputs.run_phpunit
+        if: inputs.run_phpunit && !inputs.run_phpunit_batches
         run: docker compose exec -T web ./vendor/bin/phpunit
+
+      - name: Run phpunit in parallel batches
+        if: inputs.run_phpunit && inputs.run_phpunit_batches
+        run: docker compose exec -T web ./vendor/bin/run toolkit:test-phpunit-batches
+
+      - name: Archive phpunit artifacts
+        if: inputs.run_phpunit && inputs.run_phpunit_batches
+        uses: actions/upload-artifact@v6
+        with:
+          name: junit-exports-${{ matrix.core_version }}
+          path: junit-export
 
       - name: Site install
         run: docker compose exec -T web ./vendor/bin/run drupal:site-install
