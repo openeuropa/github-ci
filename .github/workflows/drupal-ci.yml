@@ -126,3 +126,16 @@ jobs:
       - name: Run behat
         if: inputs.run_behat
         run: docker compose exec -T web ./vendor/bin/behat --strict
+
+  # Aggregate gate: emits a single, stable status check regardless of how many
+  # matrix combinations run. This is the check name to require in the branch
+  # protection rule / organisation ruleset. Do not rename it.
+  ci-ok:
+    name: CI OK
+    runs-on: ubuntu-latest
+    needs: [automated-tests]
+    if: always()
+    steps:
+      - name: Fail if any job did not pass
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
