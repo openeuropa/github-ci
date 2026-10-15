@@ -136,6 +136,20 @@ jobs:
       - name: Start services with Docker Compose
         run: docker compose up -d
 
+      - name: Wait for Fuseki
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:3030/ >/dev/null; then
+              echo "Fuseki is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          
+          echo "Fuseki failed to become ready"
+          docker ps -a
+          exit 1
+
       - name: Configure legacy Selenium settings
         if: steps.selenium.outputs.mode == 'legacy'
         run: |
